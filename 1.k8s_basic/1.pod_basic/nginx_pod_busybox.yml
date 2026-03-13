@@ -1,0 +1,21 @@
+# 한 파드내에 여러 컨테이너 띄워보기
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pinger-pod
+  namespace: rim  # 네임스페이스 지정시, 여기에 지정
+  # 파드에 라벨링(하나의 그룹으로 묶임)
+  labels:
+    app: my-nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+# 컨테이너 2개(잘 안한다)
+  - name: http-pinger
+    image: busybox
+    # http 80으로 요청을 보내겠다 5초후에 또보낸다
+    command: ['sh', '-c', 'while true; do wget -qO- http://localhost:80; sleep 5; done']

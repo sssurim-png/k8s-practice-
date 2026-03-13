@@ -1,0 +1,40 @@
+# re;ilca
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  namespace: rim
+spec:
+  replicas: 2
+# 아래의 label은 replicaset이 관리해야 할 파드를 결정하는데 사용-달라도 된다/맞추는게 안 헷갈린다
+  selector:
+    matchLabels:
+      app: my-nginx
+  template:
+  # 서비스에서 찾을때사용하는 라벨
+  # 아래의 label은 service에서 라우팅할 대상이 되는 label. service의 selector.app과 일치해야함
+    metadata:
+      labels:
+        app: my-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+---
+# service 붙이기 (파트끼리의 내부통신용)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  namespace: rim
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: my-nginx

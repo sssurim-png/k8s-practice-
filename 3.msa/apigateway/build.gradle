@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.8'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+group = 'com.beyond'
+version = '0.0.1-SNAPSHOT'
+description = 'basic project Spring Boot'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+
+
+dependencies {
+
+
+//	jwt토큰 관련 라이브러리 추가 //필요는 함
+        implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+        runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+//    토큰의 JSON인코딩/디코딩, 직렬화/파싱에 필요
+        runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+    //    eureka client의존성 추가 -유레카로 질의
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+//    gateway의존성 추가
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+
+    }
+//spring cloud version에 별도 설정 필요
+dependencyManagement{
+    imports{
+        mavenBom 'org.springframework.cloud:spring-cloud-dependencies:2024.0.0'
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}

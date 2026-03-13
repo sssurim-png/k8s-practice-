@@ -1,0 +1,56 @@
+
+server:
+#  port번호가 0번일 경우, 0~65535중에 현재 host에서 사용하지 않는 port임의로 설정
+#  쿠버네티스 8080으로 변경
+  port: 8080
+
+#  유레카 주소설정
+eureka:
+  client:
+    enabled: false
+
+spring:
+#  추가
+  config:
+    activate:
+      on-profile: prod
+  application:
+    name: member-service
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${DB_HOST}:3306/ordermsa?useSSL=true
+    username: admin
+    password: ${DB_PW}
+    #   운영 DB의 낮은 스펙과 msa의 많은 커넥션을 감안한 커넥션 축소 설정
+    hikari:
+      maximum-pool-size: 1
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
+    show_sql: true
+
+  redis:
+    host: redis-service
+    port: 6379
+    #  스프링 안에 봍통 넣는다
+
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+
+
+jwt:
+  secretKey: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
+  expiration: 30
+#  Rt시간만 바꿔서 설정
+  secretKeyRt: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
+  expirationRt: 3000
+
+logging:
+  level:
+    root: info
+
+

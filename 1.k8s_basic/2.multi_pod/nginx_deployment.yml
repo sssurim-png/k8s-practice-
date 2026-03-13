@@ -1,0 +1,40 @@
+# deployment =replica+@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: rim
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-nginx
+  template:
+    metadata:
+      labels:
+        app: my-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest #1.22.1 latest
+        # 이거 설정 후 rolloutrestart하면 버전 안바꿔도??이미지 끌고 올 수 있다??? 컨테이너 새로 만들 수 있다?? //기본이 Always라 생략가능
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+
+
+# service 붙이기 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+  namespace: rim
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: my-nginx

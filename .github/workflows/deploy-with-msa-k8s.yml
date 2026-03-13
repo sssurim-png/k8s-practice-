@@ -1,0 +1,132 @@
+# git hub actions에 올리기
+name: deploy order order-backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout github
+        uses: actions/checkout@v2
+      
+
+
+      
+      - name: install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.25.9"
+        id: install
+        
+      - name: configure aws
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_KEY }}
+          aws-secret-access-key:  ${{ secrets.AWS_SECRET }}
+          aws-region: ap-northeast-2
+
+      - name: update cluster infomation
+      # 본인 클러스터 이름으로 바꿔주기
+        run: aws eks update-kubeconfig --name 2team-cluster --region ap-northeast-2
+# ecr로그인
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+
+
+# (4세트만들거다) apigateway
+      - name: apigateway build and push docker image to ecr
+        env:
+        # 주소, 이름 확인
+          REGISTRY: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com
+          REPOSITORY: rim/apigateway
+          IMAGE_TAG: latest
+
+          # build하나, 아래 경로 맞추기 (4세트만들거다)
+        run: |
+          docker build \
+          -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+          -f ./3.msa/apigateway/Dockerfile ./3.msa/apigateway
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+# apply하나(원래 실무에서는 각각 레파지토리ㅏ 있다 이렇게 4개 한번에 넣지 않는다)
+      - name: apigateway kubectl apply
+      # 경로지정 -apply먼저, rollout다음(처음에만)
+        run: |
+          kubectl apply -f ./3.msa/apigateway/k8s/deployment_service.yml
+          kubectl rollout restart deployment apigateway-deployment -n rim
+        
+
+
+# ============== member ==============
+      - name: member build and push docker image to ecr
+        env:
+        # 주소, 이름 확인
+          REGISTRY: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com
+          REPOSITORY: rim/member
+          IMAGE_TAG: latest
+
+          # build하나, 아래 경로 맞추기 (4세트만들거다)
+        run: |
+          docker build \
+          -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+          -f ./3.msa/member/Dockerfile ./3.msa/member
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+# apply하나(원래 실무에서는 각각 레파지토리ㅏ 있다 이렇게 4개 한번에 넣지 않는다)
+      - name: member kubectl apply
+      # 경로지정 -apply먼저, rollout다음(처음에만)
+        run: |
+          kubectl apply -f ./3.msa/member/k8s/deployment_service.yml
+          kubectl rollout restart deployment member-deployment -n rim
+      
+
+# ============== ordering ==============
+      - name: ordering build and push docker image to ecr
+        env:
+        # 주소, 이름 확인
+          REGISTRY: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com
+          REPOSITORY: rim/ordering
+          IMAGE_TAG: latest
+
+          # build하나, 아래 경로 맞추기 (4세트만들거다)
+        run: |
+          docker build \
+          -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+          -f ./3.msa/ordering/Dockerfile ./3.msa/ordering
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+# apply하나(원래 실무에서는 각각 레파지토리ㅏ 있다 이렇게 4개 한번에 넣지 않는다)
+      - name: ordering kubectl apply
+      # 경로지정 -apply먼저, rollout다음(처음에만)
+        run: |
+          kubectl apply -f ./3.msa/ordering/k8s/deployment_service.yml
+          kubectl rollout restart deployment ordering-deployment -n rim
+
+
+
+
+# apply하나(원래 실무에서는 각각 레파지토리ㅏ 있다 이렇게 4개 한번에 넣지 않는다)
+      # 경로지정 -apply먼저, rollout다음(처음에만)
+      - name: product build and push docker image to ecr
+        env:
+        # 주소, 이름 확인
+          REGISTRY: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com
+          REPOSITORY: rim/product
+          IMAGE_TAG: latest
+
+          # build하나, 아래 경로 맞추기 (4세트만들거다)
+        run: |
+          docker build \
+          -t $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+          -f ./3.msa/product/Dockerfile ./3.msa/product
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      - name: product kubectl apply
+        run: |
+          kubectl apply -f ./3.msa/product/k8s/deployment_service.yml
+          kubectl rollout restart deployment product-deployment -n rim
+          
+        
+        
