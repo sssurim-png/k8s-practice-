@@ -36,7 +36,7 @@ public class RedisConfig {
     @Qualifier("ssePubSub")
     public RedisConnectionFactory ssePubSubConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        configuration.setHostName("localhost");
+        configuration.setHostName(host);
         configuration.setPort(port);
 ///redis pub/sub기능은 sb에 값을 저장하는 기능이 아니므로, 특정db에 의존적이지 않음
 //        configuration.setDatabase(1);
