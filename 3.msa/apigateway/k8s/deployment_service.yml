@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: apigateway-deployment
+  name: apigateway-deploy
   namespace: rim
 spec:
 # 보통 2개이상으로 해라. 특히 실시간은 무조건 2개이상으로 가야한다
